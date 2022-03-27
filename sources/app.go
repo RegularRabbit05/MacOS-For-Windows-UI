@@ -19,41 +19,37 @@ func Setup() {
 	rl.SetConfigFlags(rl.FlagWindowAlwaysRun)
 	rl.SetConfigFlags(rl.FlagWindowTransparent)
 	rl.SetConfigFlags(rl.FlagWindowUndecorated)
-	rl.SetConfigFlags(rl.FlagVsyncHint)
 	rl.InitWindow(Size[0], Size[1], "")
-	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
+}
 
-	for !rl.WindowShouldClose() && !Terminate {
-		Frame++
-		if Frame >= 60 {
-			Frame = 0
-		}
-		if !Freeze {
-			mouse = rl.GetMousePosition()
-		}
-		if swapMinPos {
-			goto skipRender
-		}
-		rl.BeginDrawing()
-
-		rl.ClearBackground(rl.Color{})
-		drawDecorations()
-		drawBlankArea()
-		rl.EndDrawing()
-
-		if !Freeze {
-			handleMenuBar()
-		}
-
-	skipRender:
-		if isMinimizing || swapMinPos {
-			Minimize()
-		}
-	}
-
+func Exit() {
 	rl.CloseAudioDevice()
 	rl.CloseWindow()
+}
+
+func beforeWindow() {
+	Frame++
+	if Frame >= 60 {
+		Frame = 0
+	}
+	if !Freeze {
+		mouse = rl.GetMousePosition()
+	}
+	rl.BeginDrawing()
+}
+
+func afterWindow() {
+	rl.EndDrawing()
+	if !Freeze {
+		handleMenuBar()
+	}
+}
+
+func drawWindow() {
+	rl.ClearBackground(rl.Color{})
+	drawDecorations()
+	drawBlankArea()
 }
 
 func drawDecorations() {
@@ -92,11 +88,13 @@ func handleMenuBar() {
 			swapMinPos = false
 			winMinPos = rl.GetWindowPosition()
 			shouldTerminate = false
+			rl.SetTargetFPS(60)
 		}
 		if rl.CheckCollisionPointCircle(mouse, exitIcons[2], 6) {
 			rl.ToggleFullscreen()
 		}
 	}
+	HandleMovement()
 }
 
 func Minimize() {
@@ -104,6 +102,7 @@ func Minimize() {
 	if swapMinPos {
 		swapMinPos = false
 		rl.MinimizeWindow()
+		rl.SetTargetFPS(-1)
 		if shouldTerminate {
 			Terminate = true
 		}
@@ -111,11 +110,34 @@ func Minimize() {
 	}
 	rl.SetWindowPosition(int(winMinPos.X)+tmpFrame*50, int(winMinPos.Y)+tmpFrame*100)
 	rl.SetWindowSize(int(winMinSize.X/(float32(tmpFrame/(15/10)))), int(winMinSize.Y/(float32(tmpFrame/(15/10)))))
-	if tmpFrame >= 20 {
+	if tmpFrame >= 60 {
 		isMinimizing = false
 		swapMinPos = true
 		Freeze = false
 		rl.SetWindowSize(int(winMinSize.X), int(winMinSize.Y))
 		rl.SetWindowPosition(int(winMinPos.X), int(winMinPos.Y))
+	}
+}
+
+var lastClickPos = [2]float32{-1, -1}
+
+func HandleMovement() {
+	if rl.IsMouseButtonDown(rl.MouseLeftButton) && rl.CheckCollisionPointRec(mouse, rl.Rectangle{
+		Width: float32(TitleBarSize[0]), Height: float32(TitleBarSize[1])}) {
+		var MouseX = float32(rl.GetMouseX())
+		var MouseY = float32(rl.GetMouseY())
+		if lastClickPos[0] != -1 && lastClickPos[1] != -1 {
+			var posX = rl.GetWindowPosition().X
+			var posY = rl.GetWindowPosition().Y
+			posX += MouseX - lastClickPos[0]
+			posY += MouseY - lastClickPos[1]
+			rl.SetWindowPosition(
+				int(posX),
+				int(posY))
+		}
+		lastClickPos[0] = MouseX
+		lastClickPos[1] = MouseY
+	} else {
+		lastClickPos = [2]float32{-1, -1}
 	}
 }
