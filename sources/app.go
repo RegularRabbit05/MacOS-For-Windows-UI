@@ -1,6 +1,7 @@
 package sources
 
 import (
+	"fmt"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -127,14 +128,19 @@ func HandleMovement() {
 		var MouseX = float32(rl.GetMouseX())
 		var MouseY = float32(rl.GetMouseY())
 		if lastClickPos[0] != -1 && lastClickPos[1] != -1 {
+			if MouseX-lastClickPos[0] == 0 && MouseY-lastClickPos[1] == 0 {
+				goto skip
+			}
 			var posX = rl.GetWindowPosition().X
 			var posY = rl.GetWindowPosition().Y
-			posX += MouseX - lastClickPos[0]
-			posY += MouseY - lastClickPos[1]
+			posX += MouseX - float32(TitleBarSize[0]/2)
+			posY += MouseY - 12
+			fmt.Println(MouseX - lastClickPos[0])
 			rl.SetWindowPosition(
 				int(posX),
 				int(posY))
 		}
+	skip:
 		lastClickPos[0] = MouseX
 		lastClickPos[1] = MouseY
 	} else {
