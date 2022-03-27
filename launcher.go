@@ -1,7 +1,9 @@
 package main
 
-import "MetroPaint/sources"
+import "iPaint/sources"
 
 func main() {
 	sources.Setup()
+	sources.Loop()
+	sources.Exit()
 }
