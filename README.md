@@ -1,4 +1,4 @@
 # MacOS-For-Windows-UI
 MacOS UI for windows or linux (WIP) - Window movement is also not working correctly
 
-<img src="https://cdn.discordapp.com/attachments/748984983225499738/957673327437164584/Untitled.png?size=4096">
+![image](https://github.com/RegularRabbit05/MacOS-For-Windows-UI/assets/69511985/7971a971-e350-4b52-a061-057b992795e6)
